@@ -32,7 +32,7 @@ using namespace std;
 void handleConnectionRequest(int socket) {
     char buffer[256];
     stringstream ss;
-    
+    static int portNumber = PORT_NUMBER; 
     // Read data.
     int readBytes = read(socket, buffer, 256);
     if (readBytes < 0) {
@@ -70,6 +70,17 @@ void handleConnectionRequest(int socket) {
     }
     else {
         cout << "Socket " << socket << " unhandled message " << buffer << endl;  
+    }
+    
+    // Send back the new port number as a reply.
+    portNumber ++;
+    stringstream portMsgStream;
+    portMsgStream << portNumber;
+    const char * msg = portMsgStream.str().c_str();
+    int writeBytes = write(socket, msg, sizeof(msg));
+    cout << "Return port number " << portNumber << endl;
+    if (writeBytes < 0) {
+        cout << "Error replying back to client." << endl;
     }
 
 

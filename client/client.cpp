@@ -14,6 +14,9 @@
 
 using namespace std;
 
+/*
+ * Returns the new port number.
+ */
 int sendConnectRequest() {
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
@@ -44,7 +47,6 @@ int sendConnectRequest() {
         return -1;
     }
 
-    bzero(buffer,256);
     stringstream ss;
     ss << CONNECT_CODE << " YOLO" << endl;
     const char * buffer1 = ss.str().c_str();
@@ -55,10 +57,15 @@ int sendConnectRequest() {
         cout << "ERROR writing to socket" << endl;
         return -1;
     }
-    
+   
+    bzero(buffer,256);
+    n = read(sockfd,buffer,255);
+    if (n < 0) {
+        cout << "ERROR reading from socket" << endl;
+        return -1;
+    }
     close(sockfd);
-    
-    return 0;
+    return atoi(buffer);
 }
 
 int main()
@@ -66,10 +73,17 @@ int main()
     cout << "----Welcome to the shared fuse based filesystem---" << endl;
     cout << "Lemme first initialize the client" << endl;
     cout << "Sending Request ...... " << endl;
-    if (sendConnectRequest() != 0) {
+
+    /* Protocol:
+     * Client will send connect request and get back the new port number that is
+     * assigned to the client.
+     * All further communicaitons will be done on that port.
+     */
+    int newPort = sendConnectRequest();
+    if (newPort < 0) {
         cout << "Unable to send request! Exiting" << endl;
         return 0;
     }
-    cout << "Request Send. Waiting for response now.." << endl;
+    cout << "Request successful. We got port number " << newPort << endl;
     return 0;
 }
