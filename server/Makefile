@@ -5,7 +5,7 @@ LDFLAGS=-pthread
 OBJECTS=$(SOURCES:.cpp=.o)
 	SOURCES= $(wildcard *.cpp) 
 
-EXECUTABLE=server
+EXECUTABLE=serverExecutable
 .PHONY: all
 all: $(SOURCES) $(EXECUTABLE)
 			

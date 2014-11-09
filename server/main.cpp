@@ -1,6 +1,8 @@
 /*
  * Contains the code that handles the network communication over TCP Sockets.
  * TODO Move this code to a dedicated file/class.
+ * TODO Add the handler cleanup service that will remove the unused clients that
+ * have nom communicated with us for a long time.
  */
 #include <string.h>
 #include <unistd.h>
@@ -19,6 +21,7 @@
 #include <pthread.h>
 
 #include "../utils.h"
+#include "clientHandler.h"
 using namespace std;
 
 #define MAX_CLIENTS 100
@@ -73,6 +76,10 @@ void handleConnectionRequest(int socket) {
     }
     
     // Send back the new port number as a reply.
+    
+    // One important thing is that we should not send the reply until we have a
+    // new thread up and running and ready to handle connections on the
+    // specified port. This can be a possible race condition.
     portNumber ++;
     stringstream portMsgStream;
     portMsgStream << portNumber;
