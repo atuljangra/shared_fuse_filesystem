@@ -18,6 +18,15 @@ void ClientHandler::setPortNumber(int port) {
     _portNumber = port;
 }
 
+// Prepare and start the new thread.
+void ClientHandler::start() {
+    _thread = thread(&ClientHandler::_threadListner, this);    
+}
+
+void ClientHandler::_threadListner() {
+
+}
+
 void ClientHandler::removeHandler() {
 
 }

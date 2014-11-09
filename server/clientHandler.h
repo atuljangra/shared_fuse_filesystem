@@ -10,9 +10,14 @@
 class ClientHandler {
     private:
         int _portNumber;
+        std::thread _thread;
+        
+        void _threadListner();
     public:
         ClientHandler();
         ClientHandler(int port);
+        // start listening on the specified port.
+        void start();
         void setPortNumber(int port);
         void removeHandler();
         ~ClientHandler();
