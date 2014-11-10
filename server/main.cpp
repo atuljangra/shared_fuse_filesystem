@@ -81,16 +81,8 @@ void handleConnectionRequest(int socket) {
     // new thread up and running and ready to handle connections on the
     // specified port. This can be a possible race condition.
     portNumber ++;
-    stringstream portMsgStream;
-    portMsgStream << portNumber;
-    const char * msg = portMsgStream.str().c_str();
-    int writeBytes = write(socket, msg, sizeof(msg));
-    cout << "Return port number " << portNumber << endl;
-    if (writeBytes < 0) {
-        cout << "Error replying back to client." << endl;
-    }
-
-
+    ClientHandler *ch = new ClientHandler(portNumber, socket);
+    ch -> start();
 }
 
 int main () {
