@@ -21,3 +21,7 @@ $(EXECUTABLE): $(OBJECTS)
 .PHONY: clean
 clean:
 		rm -f $(EXECUTABLE) $(OBJECTS)
+
+.PHONY:run
+run:
+	./$(EXECUTABLE)
