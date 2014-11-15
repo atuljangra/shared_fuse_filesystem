@@ -2,3 +2,4 @@
 serverExecutable
 clientExecutable
 fileSystem
+*.LOG

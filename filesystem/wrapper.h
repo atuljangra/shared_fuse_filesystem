@@ -1,5 +1,3 @@
-#include "fs.h"
-
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -14,11 +12,13 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 
+#include "FuseFS.h"
+
 void setRootDir(const char *path) {
 
 }
 
-int wrap_getAttr(const char * path, struct stat *) {
+int wrap_getAttr(const char * path, struct stat *st) {
     return 0;
 }
 

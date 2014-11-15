@@ -5,6 +5,7 @@
 #include <cstdio>
 
 #include "wrapper.h"
+#include "Network.h"
 struct fuse_operations filesystem_oper;
 
 #define DFUSE_USE_VERSION 26
@@ -12,6 +13,7 @@ struct fuse_operations filesystem_oper;
 int main (int argc, char *argv[]) {
     
     // Adding fuse bindings;
+    // TODO add all other operations.
     filesystem_oper.getattr = wrap_getAttr;  
     filesystem_oper.readlink = wrap_readlink;
     filesystem_oper.mknod = wrap_mknod;
