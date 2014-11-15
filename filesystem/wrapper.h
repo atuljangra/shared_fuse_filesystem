@@ -18,7 +18,7 @@ void setRootDir(const char *path) {
 
 }
 
-int wrap_getAttr(const char * path, struct stat *) {
+int wrap_getAttr(const char * path, struct stat *st) {
     return 0;
 }
 
