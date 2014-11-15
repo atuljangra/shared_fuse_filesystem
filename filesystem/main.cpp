@@ -5,9 +5,12 @@
 #include <cstdio>
 
 #include "wrapper.h"
-struct fuse_operations filesystem_oper;
+
 
 #define DFUSE_USE_VERSION 26
+
+struct fuse_operations filesystem_oper;
+
 
 int main (int argc, char *argv[]) {
     
@@ -15,6 +18,7 @@ int main (int argc, char *argv[]) {
     // TODO add all other operations.
     filesystem_oper.getattr = wrap_getAttr;  
     filesystem_oper.readlink = wrap_readlink;
+    filesystem_oper.getdir = NULL;
     filesystem_oper.mknod = wrap_mknod;
     filesystem_oper.mkdir = wrap_mkdir;
     filesystem_oper.unlink = wrap_unlink;
@@ -47,5 +51,27 @@ int main (int argc, char *argv[]) {
     // Start the network connection.    
     // Running the file system;
     //
-    return 0;
+
+	printf("mounting file system...\n");
+    int i, fuse_stat;	
+	for(i = 1; i < argc && (argv[i][0] == '-'); i++) {
+		if(i == argc) {
+			return (-1);
+		}
+	}
+
+    printf("Setting root directory to %s \n", argv[i]);
+	//realpath(...) returns the canonicalized absolute pathname
+	setRootDir(realpath(argv[i], NULL));
+
+	for(; i < argc; i++) {
+		argv[i] = argv[i+1];
+	}
+	argc--;
+
+	fuse_stat = fuse_main_real(argc, argv, &filesystem_oper, sizeof(filesystem_oper), NULL);
+
+	printf("fuse_main returned %d\n", fuse_stat);
+
+	return fuse_stat;
 }
