@@ -4,7 +4,16 @@
 #include "FuseFS.h"
 
 using namespace std;
-
+/*
+ * TODO: This functions will serve as the basis for the handlers on server side.
+ * TODO: Create message for each of the method.
+ * TODO: Send all the requests over the network.
+ * TODO: Error renaming, permission denied. Possible problem with chmod, chown.
+ * TODO: Flush, Release Sync. What can be the problem?
+ * TODO: Error 61 getxattr while renaming.
+ * TODO: Write -2. getattr -2 frequest while writing
+ *
+ */
 FuseFS * FuseFS::_instance = 0;
 
 #define RET_ERRNO(x) (x) == 0 ? 0: -errno

@@ -15,7 +15,12 @@ class Network {
                 _instance = new Network();
             return _instance;
         }      
+        // TODO:
+        void handShake();
+        // TODO
         int send(Message *msg);
+        // TODO
         int startListening();
+        // TODO: Install Handler.
 };
 #endif
