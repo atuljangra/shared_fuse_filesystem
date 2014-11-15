@@ -5,7 +5,6 @@
 #include <cstdio>
 
 #include "wrapper.h"
-#include "Network.h"
 struct fuse_operations filesystem_oper;
 
 #define DFUSE_USE_VERSION 26
