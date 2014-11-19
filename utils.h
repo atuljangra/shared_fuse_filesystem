@@ -17,4 +17,7 @@
 
 #define MAX_MSG_SIZE 1024
 
+#define SERVER_ROOT "~/SharedFS"
+
+
 #endif

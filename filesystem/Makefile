@@ -1,5 +1,5 @@
 CC = g++ -g
-CFLAGS = -c -Wall -DFUSE_USE_VERSION=26 $(shell pkg-config fuse --cflags)
+CFLAGS = -c -Wall -std=c++11 -DFUSE_USE_VERSION=26 $(shell pkg-config fuse --cflags)
 #LINKFLAGS = -Wall `pkg-config fuse --libs`
 LINKFLAGS = -Wall $(shell pkg-config fuse --libs) 
 

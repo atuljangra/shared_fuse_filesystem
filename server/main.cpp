@@ -88,6 +88,11 @@ void handleConnectionRequest(int socket) {
 int main () {
     int listenFD;
 
+    // Create the shared folder if it's not already there.
+    stringstream ss;
+    ss << "mkdir -p " << SERVER_ROOT;
+    system(ss.str().c_str());
+
     struct sockaddr_in serverAddress, clientAddress;
 
 

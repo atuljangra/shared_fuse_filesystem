@@ -8,10 +8,17 @@
 #include <string.h>
 #include <cstdlib>
 #include <unistd.h>
+#include <string>
+#include <sstream>
 
 #include "clientHandler.h"
 
+#include "../Message.h"
 using namespace std;
+
+#define log(...) \
+    do { if (OUT) fprintf(stdout, ##__VA_ARGS__); \
+        else fprintf(f, ##__VA_ARGS__); } while (0)
 
 ClientHandler::ClientHandler() {
 
@@ -21,6 +28,11 @@ ClientHandler::ClientHandler(int port, int socketFD) {
     _portNumber = port;
     ClientHandler();
     _initSocket = socketFD;
+    stringstream ss;
+    ss << port << ".log";
+
+    if(OUT) 
+        f = fopen(ss.str().c_str(), "w");
 }
 
 void ClientHandler::setPortNumber(int port) {
@@ -47,7 +59,7 @@ void ClientHandler::_threadListner() {
     serverAddress.sin_port = htons(_portNumber);
 
     if (bind(_listenSocketFD , (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        cerr << "Cannot bind the socket" << endl;
+        log("Cannot bind the socket\n");
     }
 
     listen(_listenSocketFD, 5);
@@ -59,9 +71,9 @@ void ClientHandler::_threadListner() {
     portMsgStream << _portNumber;
     const char * msg = portMsgStream.str().c_str();
     int writeBytes = write(_initSocket, msg, sizeof(msg));
-    cout << "Return port number " << _portNumber << endl;
+    log("Return port number %d\n", _portNumber);
     if (writeBytes < 0) {
-        cout << "Error replying back to client." << endl;
+        log("Error replying back to client.\n");
     }
 
 
@@ -70,16 +82,23 @@ void ClientHandler::_threadListner() {
         if (newSockFD < 0) {
             cerr << "Error on accept" << endl;
         }
-        char buffer[256];
+        char buffer[MAX_MSG_SIZE];
         int readBytes = read(newSockFD, buffer, 256);
-        cout << "Received: " << readBytes << " " << buffer  << endl;
+        log("Received: %d msg: %s\n", readBytes, buffer);
+        _handleMessage(buffer);
     }
 
 }
+
+void ClientHandler::_handleMessage(char *amsg) {
+   // Message * msg = Message::toMessage(amsg);
+
+}
+
 void ClientHandler::removeHandler() {
 
 }
 
 ClientHandler::~ClientHandler() {
-
+    fclose(f);
 }

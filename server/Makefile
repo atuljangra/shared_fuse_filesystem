@@ -1,7 +1,6 @@
-
 CC=g++ -g
-CFLAGS=-c -Wall -std=c++11
-LDFLAGS=-pthread
+CFLAGS=-c -Wall -std=c++11 -DFUSE_USE_VERSION=26 $(shell pkg-config fuse --cflags)
+LDFLAGS=-pthread $(shell pkg-config fuse --libs)
 OBJECTS=$(SOURCES:.cpp=.o)
 	SOURCES= $(wildcard *.cpp) 
 
