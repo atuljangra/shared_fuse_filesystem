@@ -65,8 +65,8 @@ class Message {
         void create_init(struct fuse_conn_info *conn);
 		
 		// Networking stuff.
-		char *serialize();
-		static toMessage(char *);
+		const char *serialize();
+		static Message * toMessage(char *);
 };
 
 #endif

@@ -1,9 +1,15 @@
 #include "Network.h"
 #include "../utils.h"
 
+using namespace std;
+
+#define log(...) \
+                do { if (!OUT) fprintf(stdout, ##__VA_ARGS__); \
+                    else fprintf(f, ##__VA_ARGS__); } while (0)
+
 Network * Network::_instance = 0;
 
-void Network::handShake() {
+int Network::handShake() {
 	log("Trying initial handshake with the server %s\n", SERVER);
 	int sockfd, portno, n;
     struct sockaddr_in serv_addr;
@@ -37,7 +43,7 @@ void Network::handShake() {
     stringstream ss;
     ss << CONNECT_CODE << " YOLO" << endl;
     const char * buffer1 = ss.str().c_str();
-    log("Writing %s\n" buffer1);
+    log("Writing %s\n", buffer1);
     n = write(sockfd,buffer1,strlen(buffer1));
     
     if (n < 0) {
@@ -54,13 +60,15 @@ void Network::handShake() {
     close(sockfd);
     _port = atoi(buffer);
 	log("Setting port to %d\n", _port);
+    return 0;
 }
 
-int Network::send(Message *msg) {
-	return (msg, false, NULL);
+int Network::send(Message * msg) {
+	Message *nullmsg = NULL;
+    return send(msg, false, *nullmsg);
 }
 
-int Network::send(Message *msg, int wait, Message &retMsg) {
+int Network::send(Message *msg, bool wait , Message &retMsg) {
 	int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -91,14 +99,17 @@ int Network::send(Message *msg, int wait, Message &retMsg) {
 
     stringstream ss;
 	// Convert message to a char *.
-    char *msgBuffer = msg -> serialize();
-    n = write(sockfd,msgBuffer,strlen(buffer1));
+    const char *msgBuffer = msg -> serialize();
+    n = write(sockfd,msgBuffer,strlen(msgBuffer));
     
     if (n < 0) {
         log("ERROR writing to socket\n");
         return -1;
     }
    
+    if(!wait) 
+        return 0;
+
     bzero(buffer,256);
     n = read(sockfd,buffer,255);
     if (n < 0) {
@@ -108,7 +119,9 @@ int Network::send(Message *msg, int wait, Message &retMsg) {
 
     close(sockfd);
 	// Convert a buffer to a msg.
-	retMsg = Message::toMessage(buffer);
+    // TODO Improve this:
+    Message *reply = Message::toMessage(buffer);
+    retMsg= Message(*reply);
 	return 0;
 	
 }

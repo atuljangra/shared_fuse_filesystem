@@ -17,7 +17,7 @@
 #include "../Message.h"
 #include "Network.h"
 
-#define OUT 0 
+#include "../utils.h"
 
 class FuseFS {
     private:
