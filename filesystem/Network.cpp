@@ -36,12 +36,12 @@ int Network::handShake() {
     serv_addr.sin_port = htons(portno);
     
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) { 
-        log("ERROR connecting\n");
+        log("Error connecting\n");
         return -1;
     }
 
     stringstream ss;
-    ss << CONNECT_CODE << " YOLO" << endl;
+    ss << CONNECT_CODE << endl;
     const char * buffer1 = ss.str().c_str();
     log("Writing %s\n", buffer1);
     n = write(sockfd,buffer1,strlen(buffer1));

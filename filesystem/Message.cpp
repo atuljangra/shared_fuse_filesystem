@@ -4,3 +4,4 @@ const char *Message::serialize() {
     return "ASKMEANYTHING";    
 }
 
+

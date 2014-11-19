@@ -49,6 +49,12 @@ int main (int argc, char *argv[]) {
         
     printf("Attempting network connection.\n"); 
     // Start the network connection.    
+    Network *network = Network::getInstance();
+    if(network -> handShake() != 0) {
+        printf("Problem while establishing the connection\n");
+        exit(-1);
+
+    }
     // Running the file system;
     //
 
