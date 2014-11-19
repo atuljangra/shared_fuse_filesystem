@@ -122,6 +122,7 @@ int Network::send(Message *msg, bool wait , Message &retMsg) {
     // TODO Improve this:
     Message *reply = Message::toMessage(buffer);
     retMsg= Message(*reply);
+    retMsg = *reply;
 	return 0;
 	
 }

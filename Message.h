@@ -13,7 +13,9 @@ class Message {
         int _code;
         std::string _msg;
         std::string getMessage();
-        ~Message();
+        ~Message() {
+        }
+
         Message(const Message &m) {
             _code = m._code;
             _msg = m._msg;
@@ -66,7 +68,9 @@ class Message {
 		
 		// Networking stuff.
 		const char *serialize();
-		static Message * toMessage(char *);
+		static Message * toMessage(char *yo) {
+            return new Message();
+        }
 };
 
 #endif
