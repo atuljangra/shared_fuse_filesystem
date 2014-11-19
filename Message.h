@@ -63,7 +63,10 @@ class Message {
         void create_releasedir(const char * path, struct fuse_file_info *fileInfo);
         void create_fsyncdir(const char * path, int datasync, struct fuse_file_info *fileInfo);
         void create_init(struct fuse_conn_info *conn);
-
+		
+		// Networking stuff.
+		char *serialize();
+		static toMessage(char *);
 };
 
 #endif

@@ -56,3 +56,59 @@ void Network::handShake() {
 	log("Setting port to %d\n", _port);
 }
 
+int Network::send(Message *msg) {
+	return (msg, false, NULL);
+}
+
+int Network::send(Message *msg, int wait, Message &retMsg) {
+	int sockfd, n;
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+
+    char buffer[MAX_MSG_SIZE];
+    
+    // Connect port number
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    
+    if (sockfd < 0) {
+        log("Error opening socket\n");
+        return -1;
+    }
+    
+    server = gethostbyname(SERVER);
+    
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr, 
+         (char *)&serv_addr.sin_addr.s_addr,
+         server->h_length);
+    serv_addr.sin_port = htons(_port);
+    
+    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) { 
+        log("ERROR connecting\n");
+        return -1;
+    }
+
+    stringstream ss;
+	// Convert message to a char *.
+    char *msgBuffer = msg -> serialize();
+    n = write(sockfd,msgBuffer,strlen(buffer1));
+    
+    if (n < 0) {
+        log("ERROR writing to socket\n");
+        return -1;
+    }
+   
+    bzero(buffer,256);
+    n = read(sockfd,buffer,255);
+    if (n < 0) {
+        log("ERROR reading from socket\n");
+        return -1;
+    }
+
+    close(sockfd);
+	// Convert a buffer to a msg.
+	retMsg = Message::toMessage(buffer);
+	return 0;
+	
+}

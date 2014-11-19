@@ -9,6 +9,7 @@
 
 #define RET_ERRNO(x) (x) == 0 ? 0: -errno
 
+#define MAX_MSG_SIZE = 1024;
 #define log(...) \
                 do { if (!OUT) fprintf(stdout, ##__VA_ARGS__); \
                     else fprintf(f, ##__VA_ARGS__); } while (0)
