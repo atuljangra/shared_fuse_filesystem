@@ -15,7 +15,8 @@ class Network {
                 _instance = new Network();
             return _instance;
         }      
-        // TODO:
+        // This do the initial handshale with the server and set up the 
+        // port number.
         void handShake();
         // TODO
         int send(Message *msg);

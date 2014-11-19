@@ -10,7 +10,6 @@
 #include <sstream>
 #include "../utils.h"
 
-#define SERVER "localhost"
 
 using namespace std;
 

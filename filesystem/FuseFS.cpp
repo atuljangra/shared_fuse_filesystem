@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "FuseFS.h"
+#include "../utils.h"
 
 using namespace std;
 /*
@@ -16,11 +17,7 @@ using namespace std;
  */
 FuseFS * FuseFS::_instance = 0;
 
-#define RET_ERRNO(x) (x) == 0 ? 0: -errno
 
-#define log(...) \
-                do { if (!OUT) fprintf(stdout, ##__VA_ARGS__); \
-                    else fprintf(f, ##__VA_ARGS__); } while (0)
 
 const char * FuseFS::_fullPath(const char * path) {
     stringstream ss;
