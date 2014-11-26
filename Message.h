@@ -6,11 +6,16 @@
 #include <cstdlib>
 #include <iostream>
 #include <fuse.h>
+#include <sstream>
+
+// Message codes.
+#define GETATTR 1
 
 class Message {
     public:
         Message(int, std::string);
         int _code;
+        int _ret;
         std::string _msg;
         std::string getMessage();
         ~Message() {
@@ -32,7 +37,7 @@ class Message {
          * * Message creaters.
          * * Modify already instantiated Message.
          * */
-        void create_getAttr(const char * path, struct stat *st);
+        void create_getAttr(const char * path);
         void create_readlink(const char * path, char *link, size_t size);
         void create_mknod(const char * path, mode_t mode, dev_t dev);
         void create_mkdir(const char * path, mode_t mode);
@@ -68,9 +73,13 @@ class Message {
 		
 		// Networking stuff.
 		const char *serialize();
-		static Message * toMessage(char *yo) {
-            return new Message();
-        }
+        
+static Message * toMessage(char *buffer) {
+    std::stringstream ss;
+    Message *msg = new Message();
+    ss >> msg->_code >> msg -> _ret >> msg->_msg;
+    return msg;
+}
 };
 
 #endif

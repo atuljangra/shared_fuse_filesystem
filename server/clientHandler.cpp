@@ -12,8 +12,10 @@
 #include <sstream>
 
 #include "clientHandler.h"
-
 #include "../Message.h"
+
+// #include "FileHandler.h"
+
 using namespace std;
 
 #define log(...) \
@@ -24,6 +26,12 @@ ClientHandler::ClientHandler() {
 
 }
 
+const char * fpath(const char * x) {
+    stringstream ss;
+    ss << SERVER_ROOT << x;
+    return ss.str().c_str();
+}
+
 ClientHandler::ClientHandler(int port, int socketFD) {
     _portNumber = port;
     ClientHandler();
@@ -31,7 +39,7 @@ ClientHandler::ClientHandler(int port, int socketFD) {
     stringstream ss;
     ss << port << ".log";
 
-    if(OUT) 
+    if(!OUT) 
         f = fopen(ss.str().c_str(), "w");
 }
 
@@ -85,15 +93,37 @@ void ClientHandler::_threadListner() {
         char buffer[MAX_MSG_SIZE];
         int readBytes = read(newSockFD, buffer, 256);
         log("Received: %d msg: %s\n", readBytes, buffer);
-        _handleMessage(buffer);
+        _handleMessage(buffer, newSockFD);
     }
 
 }
 
-void ClientHandler::_handleMessage(char *amsg) {
-   // Message * msg = Message::toMessage(amsg);
+void ClientHandler::_handleMessage(char *buffer, int socket) {
+    Message * msg = Message::toMessage(buffer);
+    int flag = msg->_code;
+    Message * retMsg = new Message();
+    switch(flag)
+    {
+        case GETATTR:
+            struct stat *statbuf;
+            const char *path = msg->_msg.c_str();
+            int result; // = file_getAttr(fpath(path), statbuf);
+            retMsg -> _code = GETATTR;
+            retMsg -> _ret = result;
+            char *stat;
+            memcpy(stat, statbuf, sizeof(&statbuf));
+            retMsg -> _msg = string(stat);
+            break;
+    }
+
+    // Send the retMsg back to the socket.
+    const char * writeBuffer = msg -> serialize();
+    int writtenBytes = write(socket, writeBuffer, sizeof(writeBuffer));
+    if (writtenBytes < 0)
+        log("Error sending response\n");
 
 }
+
 
 void ClientHandler::removeHandler() {
 

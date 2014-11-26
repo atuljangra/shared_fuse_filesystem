@@ -18,7 +18,7 @@ class ClientHandler {
         int _listenSocketFD;
         std::condition_variable _cv;        
         void _threadListner();
-        void _handleMessage(char *msg);
+        void _handleMessage(char *msg, int socket);
     public:
         ClientHandler();
         ClientHandler(int port, int socketFD);

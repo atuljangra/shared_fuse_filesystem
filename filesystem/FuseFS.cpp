@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "FuseFS.h"
+#include "../utils.h"
 
 #define log(...) \
                 do { if (!OUT) fprintf(stdout, ##__VA_ARGS__); \
@@ -32,9 +33,12 @@ void FuseFS::setRootDir(const char * path) {
 }
 
 int FuseFS::Getattr(const char *path, struct stat *statbuf) {
-    const char *fullPath = _fullPath(path);
-    log("GetAttr(%s)\n", fullPath); 
-    int ret = RET_ERRNO(lstat(fullPath, statbuf));
+    log("GetAttr(%s)\n", path);
+    Message *msg = new Message();
+    msg -> create_getAttr(path); 
+    Message *retMsg = new Message();
+    _network->send(msg, true, retMsg);
+    int ret = 0; 
     log("getAttr ret %d\n", ret);
     return ret;
 }

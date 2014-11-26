@@ -1,7 +1,13 @@
 /* 
  * This is the file that handles the filesystem calls on the server side of
  * the sharedfile system.
+ *
+ * All the paths presented here are absolute local file system paths.
+ *
  */
+#ifndef FILEHANDLER_H
+#define FILEHANDLER_H
+
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -18,12 +24,11 @@
 
 #include "../utils.h"
 
-void setRootDir(const char *path) {
-    INS(setRootDir(path));
-}
 
 int file_getAttr(const char * path, struct stat *st) {
-    return INS(Getattr(path, st));
+    int result;
+    result = lstat(path, st);
+    return RET_ERRNO(result);
 }
 
 int file_readlink(const char * path, char *link, size_t size) {

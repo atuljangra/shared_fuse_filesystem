@@ -1,5 +1,4 @@
 #include "Network.h"
-#include "../utils.h"
 
 using namespace std;
 
@@ -65,10 +64,10 @@ int Network::handShake() {
 
 int Network::send(Message * msg) {
 	Message *nullmsg = NULL;
-    return send(msg, false, *nullmsg);
+    return send(msg, false, nullmsg);
 }
 
-int Network::send(Message *msg, bool wait , Message &retMsg) {
+int Network::send(Message *msg, bool wait , Message *retMsg) {
 	int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -121,8 +120,7 @@ int Network::send(Message *msg, bool wait , Message &retMsg) {
 	// Convert a buffer to a msg.
     // TODO Improve this:
     Message *reply = Message::toMessage(buffer);
-    retMsg= Message(*reply);
-    retMsg = *reply;
+    retMsg = reply;
 	return 0;
 	
 }

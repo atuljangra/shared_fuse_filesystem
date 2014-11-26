@@ -56,7 +56,6 @@ int main (int argc, char *argv[]) {
 
     }
     // Running the file system;
-    //
 
 	printf("mounting file system...\n");
     int i, fuse_stat;	

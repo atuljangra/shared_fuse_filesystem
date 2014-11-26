@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "../Message.h"
+#include "../utils.h"
 
 class Network {
     private:
@@ -39,7 +40,7 @@ class Network {
          * Second parameters tells us if we want to wait for the response 
          * from the server. 
          */ 
-        int send(Message * msg, bool wait, Message &retMsg);
+        int send(Message * msg, bool wait, Message * retMsg);
 
         // TODO
         int startListening();

@@ -6,7 +6,7 @@ LINKFLAGS = -Wall $(shell pkg-config fuse --libs)
 EXECUTABLE = fileSystem
 
 OBJECTS=$(SOURCES:.cpp=.o)
-	SOURCES= $(wildcard *.cpp)
+	SOURCES= ../Message.cpp $(wildcard *.cpp) 
 
 .PHONY: all
 
