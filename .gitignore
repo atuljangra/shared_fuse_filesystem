@@ -3,3 +3,6 @@ serverExecutable
 clientExecutable
 fileSystem
 *.LOG
+*.log
+*.tar.gz
+tags

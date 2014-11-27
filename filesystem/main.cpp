@@ -48,32 +48,30 @@ int main (int argc, char *argv[]) {
     filesystem_oper.init = wrap_init;
         
     printf("Attempting network connection.\n"); 
+    
     // Start the network connection.    
     Network *network = Network::getInstance();
     if(network -> handShake() != 0) {
         printf("Problem while establishing the connection\n");
-        exit(-1);
+      //  exit(-1);
 
     }
+    
     // Running the file system;
-
 	printf("mounting file system...\n");
     int i, fuse_stat;	
-	for(i = 1; i < argc && (argv[i][0] == '-'); i++) {
+    
+    // Lets make sure that there is a mount point provided.
+    for(i = 1; i < argc && (argv[i][0] == '-'); i++) {
 		if(i == argc) {
 			return (-1);
 		}
 	}
 
-    printf("Setting root directory to %s \n", argv[i]);
-	//realpath(...) returns the canonicalized absolute pathname
+    printf("Setting mount point to %s \n", argv[i]);
+	
+    //realpath(...) returns the canonicalized absolute pathname
 	setRootDir(realpath(argv[i], NULL));
-
-	for(; i < argc; i++) {
-		argv[i] = argv[i+1];
-	}
-	argc--;
-
 	fuse_stat = fuse_main_real(argc, argv, &filesystem_oper, sizeof(filesystem_oper), NULL);
 
 	printf("fuse_main returned %d\n", fuse_stat);
