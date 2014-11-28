@@ -3,13 +3,13 @@
 using namespace std;
 
 #define log(...) \
-                do { if (!OUT) fprintf(stdout, ##__VA_ARGS__); \
+                do { if (OUT) fprintf(stdout, ##__VA_ARGS__); \
                     else fprintf(f, ##__VA_ARGS__); } while (0)
 
 Network * Network::_instance = 0;
 
 int Network::handShake() {
-	log("Trying initial handshake with the server %s\n", SERVER);
+	log("Trying initial handshake with the server %s port%d\n", SERVER, CONNECT_PORT);
 	int sockfd, portno, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -100,7 +100,7 @@ int Network::send(Message *msg, bool wait , Message *retMsg) {
 	// Convert message to a char *.
     const char *msgBuffer = msg -> serialize();
     n = write(sockfd,msgBuffer,strlen(msgBuffer));
-    
+    log("Wrote %s\n", msgBuffer); 
     if (n < 0) {
         log("ERROR writing to socket\n");
         return -1;
@@ -118,9 +118,8 @@ int Network::send(Message *msg, bool wait , Message *retMsg) {
 
     close(sockfd);
 	// Convert a buffer to a msg.
-    // TODO Improve this:
-    Message *reply = Message::toMessage(buffer);
-    retMsg = reply;
+    log("Received buffer %s\n", buffer);
+    Message::fillMessage(retMsg, buffer);
+    log("Ret: %d Code: %d\n", retMsg -> _ret, retMsg ->_code);
 	return 0;
-	
 }

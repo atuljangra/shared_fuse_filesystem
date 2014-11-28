@@ -5,7 +5,7 @@
 #include "../utils.h"
 
 #define log(...) \
-                do { if (!OUT) fprintf(stdout, ##__VA_ARGS__); \
+                do { if (OUT) fprintf(stdout, ##__VA_ARGS__); \
                     else fprintf(f, ##__VA_ARGS__); } while (0)
 
 using namespace std;
@@ -17,7 +17,6 @@ using namespace std;
  * TODO: Flush, Release Sync. What can be the problem?
  * TODO: Error 61 getxattr while renaming.
  * TODO: Write -2. getattr -2 frequest while writing
- *
  */
 FuseFS * FuseFS::_instance = 0;
 
@@ -38,13 +37,16 @@ int FuseFS::Getattr(const char *path, struct stat *statbuf) {
     msg -> create_getAttr(path); 
     Message *retMsg = new Message();
     _network->send(msg, true, retMsg);
-    int ret = 0; 
-    log("getAttr ret %d\n", ret);
+    int ret = retMsg -> _ret; 
+    if (ret >= 0) {
+        memcpy(statbuf, retMsg -> _msg.c_str(), 
+                retMsg -> _msg.length());
+    }
+    log("GetAttr ret %d\n", ret);
     return ret;
 }
 
 int FuseFS::Readlink(const char *path, char *link, size_t size) {
-    const char *fullPath = _fullPath(path);
     log("readLink(path=%s, link=%s, size=%lud)\n", path, link, size);
     int ret = 0; // RET_ERRNO(readlink(fullPath, link, size));
     log("readLink ret %d\n", ret);
@@ -164,9 +166,17 @@ int FuseFS::Write(const char *path, const char *buf, size_t size, off_t offset, 
 }
 
 int FuseFS::Statfs(const char *path, struct statvfs *statInfo) {
-    const char *fullPath = _fullPath(path);
-    log("statfs(path=%s)\n", fullPath); 
-    int ret = 0; //RET_ERRNO(statvfs(fullPath, statInfo));
+    log("statfs(path=%s)\n", path);
+    Message *msg = new Message();
+    msg -> create_statfs(path);
+    Message *retMsg = new Message();
+    _network->send(msg, true, retMsg);
+    int ret = retMsg -> _ret; 
+    if (ret >= 0) {
+        memcpy(statInfo, retMsg -> _msg.c_str(), 
+                retMsg -> _msg.length());
+    }
+     // int ret = 0; //RET_ERRNO(statvfs(fullPath, statInfo));
     log("statfs ret %d\n", ret);
     return ret;
 }
@@ -229,11 +239,11 @@ int FuseFS::Opendir(const char *path, struct fuse_file_info *fileInfo) {
     log("opendir fh=%lud\n", fileInfo -> fh);
     return NULL== dir ? -errno : 0;
 }
-int FuseFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo) {
+int FuseFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler, 
+        off_t offset, struct fuse_file_info *fileInfo) {
     const char *fullPath = _fullPath(path);
     log("readdir(path=%s, offset=%lud)\n", fullPath, offset); 
-    DIR *dir = (DIR *)fileInfo -> fh;
-    struct dirent *de = 0; //readdir(dir);
+    // struct dirent *de = 0; //readdir(dir);
     
     return 0;
     

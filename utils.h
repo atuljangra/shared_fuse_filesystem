@@ -8,20 +8,16 @@
 
 using namespace std;
 
-#define CONNECT_PORT 5090
+#define CONNECT_PORT 5099
 
 #define SERVER "localhost"
 
-#define OUT 0 
-
-#define CONNECT_CODE 1
+#define OUT 1 
 
 #define RET_ERRNO(x) (x) == 0 ? 0: -errno
 
 #define MAX_MSG_SIZE 1024
 
-#define SERVER_ROOT "~/SharedFS/"
-
-
+#define SERVER_ROOT "/home/atul/SharedFS"
 
 #endif

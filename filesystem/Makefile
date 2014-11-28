@@ -24,8 +24,8 @@ clean:
 
 .PHONY:run
 run:
-	mkdir -p a b
-	./$(EXECUTABLE) -f a b
+	mkdir -p mount 
+	./$(EXECUTABLE) -f mount
 
 umount:
 	fusermount -u b

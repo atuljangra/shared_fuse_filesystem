@@ -16,8 +16,26 @@ void Message::create_getAttr(const char *path) {
     stringstream ss;
     ss << path;
     _msg = ss.str();
-    cout << _msg << endl;
     _code = GETATTR;
 }
+
+void Message::create_statfs(const char *path) {
+    stringstream ss;
+    ss << path;
+    _msg = ss.str();
+    _code = STATFS; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 

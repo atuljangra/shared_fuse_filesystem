@@ -7,9 +7,12 @@
 #include <iostream>
 #include <fuse.h>
 #include <sstream>
+#include <string>
 
 // Message codes.
-#define GETATTR 1
+#define CONNECT_CODE 1 
+#define GETATTR 2
+#define STATFS 3
 
 class Message {
     public:
@@ -27,6 +30,7 @@ class Message {
         }
         Message() {
             _code = -1;
+            _ret = -1;
             _msg = "NULL";
         }
         Message(int code) {
@@ -55,7 +59,7 @@ class Message {
                 off_t offset, struct fuse_file_info *fileInfo);
         void create_write(const char * path, const char *buf, size_t size,
                 off_t offset, struct fuse_file_info *fileInfo);
-        void create_statfs(const char * path, struct statvfs *statInfo);
+        void create_statfs(const char * path);
         void create_flush(const char * path, struct fuse_file_info *fileInfo);
         void create_release(const char * path, struct fuse_file_info *fileInfo);
         void create_fsync(const char * path, int datasync, struct fuse_file_info *fileInfo);
@@ -74,12 +78,25 @@ class Message {
 		// Networking stuff.
 		const char *serialize();
         
-static Message * toMessage(char *buffer) {
-    std::stringstream ss;
-    Message *msg = new Message();
-    ss >> msg->_code >> msg -> _ret >> msg->_msg;
-    return msg;
-}
+        static Message * toMessage(char *buffer) {
+            std::stringstream ss;
+            ss.str(buffer);
+            Message *msg = new Message();
+            int code, ret;
+            std::string buf; 
+            ss >> code;
+            ss >> ret;
+            ss >> buf;
+            msg -> _code = code;
+            msg -> _ret = ret;
+            msg -> _msg = buf;
+            return msg;
+        }
+        static void fillMessage(Message *msg, char *buffer) {
+            std::stringstream ss;
+            ss.str(buffer);
+            ss >> msg -> _code >> msg -> _ret >> msg -> _msg;
+        }
 };
 
 #endif

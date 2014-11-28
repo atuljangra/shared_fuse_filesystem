@@ -22,10 +22,11 @@
 
 #include "../utils.h"
 #include "clientHandler.h"
+#include "../Message.h"
+
 using namespace std;
 
 #define MAX_CLIENTS 100
-#define PORT_NUMBER 5090
 
 /*
  * A thread per client model.
@@ -35,7 +36,7 @@ using namespace std;
 void handleConnectionRequest(int socket) {
     char buffer[256];
     stringstream ss;
-    static int portNumber = PORT_NUMBER; 
+    static int portNumber = CONNECT_PORT; 
     // Read data.
     int readBytes = read(socket, buffer, 256);
     if (readBytes < 0) {
@@ -83,6 +84,7 @@ void handleConnectionRequest(int socket) {
     portNumber ++;
     ClientHandler *ch = new ClientHandler(portNumber, socket);
     ch -> start();
+    cout << "Socket " << socket << " handled" << endl;
 }
 
 int main () {
@@ -101,10 +103,14 @@ int main () {
     bzero((char *) &serverAddress, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = INADDR_ANY;
-    serverAddress.sin_port = htons(PORT_NUMBER);
+    serverAddress.sin_port = htons(CONNECT_PORT);
+    int yes = 1;
+    if (setsockopt(listenFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        cerr << "error while setting options on socket" << endl;
+    }
 
     if (bind(listenFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        cerr << "Cannot bind the socket" << endl;
+         cerr << "Cannot bind the socket port:" << CONNECT_PORT << endl;
     }
 
     listen(listenFD, 5);

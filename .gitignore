@@ -6,3 +6,4 @@ fileSystem
 *.log
 *.tar.gz
 tags
+*.bak

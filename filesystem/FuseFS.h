@@ -31,7 +31,7 @@ class FuseFS {
         
         FuseFS() {
             _network = Network::getInstance();
-            if (OUT)
+            if (!OUT)
                 f = fopen("../FuseFS.log", "w");
         };
     
@@ -39,7 +39,7 @@ class FuseFS {
 
         ~FuseFS() {
             // TODO Delete network.
-            if (OUT)
+            if (!OUT)
                 fclose(f);
         }
         const char * _fullPath(const char *path);
