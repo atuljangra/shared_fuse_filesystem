@@ -166,7 +166,7 @@ int FuseFS::Write(const char *path, const char *buf, size_t size, off_t offset, 
 }
 
 int FuseFS::Statfs(const char *path, struct statvfs *statInfo) {
-    log("statfs(path=%s)\n", path);
+    log("statfs(path:%s)\n", path);
     Message *msg = new Message();
     msg -> create_statfs(path);
     Message *retMsg = new Message();
@@ -231,13 +231,13 @@ int FuseFS::Removexattr(const char *path, const char *name) {
     log("removexattr ret %d\n", ret);
     return ret;
 }
+/*
+ * So open is called when you want to read or write. 
+ * We are working with path names. Thus files will not be opened as such.
+ */
 int FuseFS::Opendir(const char *path, struct fuse_file_info *fileInfo) {
-    const char *fullPath = _fullPath(path);
-    log("opendir(path=%s)\n", fullPath); 
-    DIR *dir = 0; //opendir(fullPath);
-    fileInfo -> fh = (uint64_t)dir;
-    log("opendir fh=%lud\n", fileInfo -> fh);
-    return NULL== dir ? -errno : 0;
+    log("opendir(path=%s)\n", path); 
+    return 0;
 }
 int FuseFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler, 
         off_t offset, struct fuse_file_info *fileInfo) {

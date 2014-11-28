@@ -102,8 +102,12 @@ int file_removexattr(const char * path, const char *name) {
 }
 int file_opendir(const char * path, struct fuse_file_info *fileInfo) {
 }
+/*
+ * Open, Read and close.
+ */
 int file_readdir(const char * path, void *buf, fuse_fill_dir_t filler, off_t offset,
             struct fuse_file_info *fileInfo) {
+    DIR *dp;
 }
 int file_releasedir(const char * path, struct fuse_file_info *fileInfo) {
 }

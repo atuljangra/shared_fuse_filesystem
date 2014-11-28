@@ -11,7 +11,6 @@ const char *Message::serialize() {
     memcpy(buffer + sizeof(int), &_ret, sizeof(int));
     memcpy(buffer + 2 * sizeof(int), &_size, sizeof(int));
     memcpy(buffer + 3 *sizeof(int), _buffer, _size);
-    cout << _code << _ret << _size << _buffer << endl;
     return buffer;
 }
 
