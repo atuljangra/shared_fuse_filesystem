@@ -263,11 +263,8 @@ int FuseFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 
 int FuseFS::Releasedir(const char *path, struct fuse_file_info *fileInfo) {
-    const char *fullPath = _fullPath(path);
-    log("releasedir(path=%s)\n", fullPath); 
-    int ret = 0; //RET_ERRNO(closedir((DIR *)fileInfo -> fh));
-    log("Releasedir ret %d\n", ret);
-    return ret;
+    log("releasedir(path:%s)\n", path); 
+    return 0;
 }
 int FuseFS::Fsyncdir(const char *path, int datasync, struct fuse_file_info *fileInfo) {
     const char *fullPath = _fullPath(path);

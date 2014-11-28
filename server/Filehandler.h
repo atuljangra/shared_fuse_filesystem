@@ -109,7 +109,9 @@ int file_readdir(const char * path, void *buf, fuse_fill_dir_t filler, off_t off
             struct fuse_file_info *fileInfo) {
     DIR *dp;
 }
+
 int file_releasedir(const char * path, struct fuse_file_info *fileInfo) {
+
 }
 int file_fsyncdir(const char * path, int datasync, struct fuse_file_info *fileInfo) {
 }
