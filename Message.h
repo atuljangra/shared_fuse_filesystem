@@ -7,9 +7,10 @@
 #include <iostream>
 #include <fuse.h>
 #include <sstream>
-#include <string>
-
+#include <vector>
 // Message codes.
+#define MAX_SIZE 512
+
 #define CONNECT_CODE 1 
 #define GETATTR 2
 #define STATFS 3
@@ -19,23 +20,23 @@ class Message {
         Message(int, std::string);
         int _code;
         int _ret;
-        std::string _msg;
-        std::string getMessage();
+        // Size that makes sense in the continued buffer
+        int _size;
+        char _buffer[MAX_SIZE];
         ~Message() {
         }
 
         Message(const Message &m) {
             _code = m._code;
-            _msg = m._msg;
+            _ret = m._ret;
+            _size = m._size;
+            for (int i = 0; i < _size; i++) 
+                _buffer[i] = m._buffer[i];
         }
         Message() {
             _code = -1;
             _ret = -1;
-            _msg = "NULL";
-        }
-        Message(int code) {
-            _code = code;
-            _msg = "NULL";
+            _size = 0;
         }
         /*
          * * Message creaters.
@@ -79,23 +80,19 @@ class Message {
 		const char *serialize();
         
         static Message * toMessage(char *buffer) {
-            std::stringstream ss;
-            ss.str(buffer);
             Message *msg = new Message();
-            int code, ret;
-            std::string buf; 
-            ss >> code;
-            ss >> ret;
-            ss >> buf;
-            msg -> _code = code;
-            msg -> _ret = ret;
-            msg -> _msg = buf;
+            memcpy(&msg -> _code, buffer, sizeof(int));
+            memcpy(&msg -> _ret, buffer + sizeof(int), sizeof(int));
+            memcpy(&msg -> _size, buffer + 2 * sizeof(int), sizeof(int));
+            memcpy(msg -> _buffer, buffer + 3 * sizeof(int), msg -> _size);
+            
             return msg;
         }
         static void fillMessage(Message *msg, char *buffer) {
-            std::stringstream ss;
-            ss.str(buffer);
-            ss >> msg -> _code >> msg -> _ret >> msg -> _msg;
+            memcpy(&msg -> _code, buffer, sizeof(int));
+            memcpy(&msg -> _ret, buffer + sizeof(int), sizeof(int));
+            memcpy(&msg -> _size, buffer + 2 * sizeof(int), sizeof(int));
+            memcpy(msg -> _buffer, buffer + 3 * sizeof(int), msg -> _size);
         }
 };
 

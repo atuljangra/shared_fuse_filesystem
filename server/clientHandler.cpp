@@ -117,47 +117,49 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
         case GETATTR: {
             struct stat *statbuf;
             statbuf = (struct stat *) malloc(sizeof(struct stat));
-            const char *path = msg->_msg.c_str();
+            char *path = (char *)malloc(msg -> _size);
+            memcpy(path, msg -> _buffer, msg -> _size);
             int result = file_getAttr(fpath(path), statbuf);
             retMsg -> _code = GETATTR;
             retMsg -> _ret = result;
-            retMsg -> _msg = "";
-            printf("GetAttr ret:%d path:%s\n", result, path); 
+            retMsg -> _size = 0;
+            log("GetAttr ret:%d path:%s\n", result, path); 
             // This is only needed if we succeed
             if (result >= 0) {
-                char *statChar;
-                statChar = (char *)malloc(sizeof(struct stat));
-                memcpy(statChar, statbuf, sizeof(struct stat));
-                retMsg -> _msg = string(statChar);
+                retMsg -> _size = sizeof(struct stat);
+                memcpy(retMsg -> _buffer, statbuf, retMsg -> _size);
+                log("getAttr returning %d %s\n", retMsg -> _size, retMsg -> _buffer);
             }
             break;
         }
 
         case STATFS: {
-            struct statvfs statInfo;
-            
-            const char *path = msg -> _msg.c_str();
-            int result = file_statfs(fpath(path), &statInfo);
+            struct statvfs *statInfo;
+            statInfo = (struct statvfs *) malloc (sizeof(struct statvfs));
+            char *path = (char *)malloc(msg -> _size);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            int result = file_statfs(fpath(path), statInfo);
             retMsg -> _code = STATFS;
             retMsg -> _ret = result;
-            retMsg ->  _msg = "";
+            retMsg -> _size = 0;
             log("Statfs ret:%d path:%s\n", result, path);
             if (result >= 0) {
-                char *statChar;
-                statChar = (char *)malloc(sizeof(struct statvfs));
-                memcpy(statChar, &statInfo, sizeof(struct statvfs));
-                retMsg -> _msg = string(statChar);
+                retMsg -> _size = sizeof(struct statvfs);
+                memcpy(retMsg -> _buffer, statInfo, sizeof(struct statvfs));
+                log("statfs returning %d %s\n", retMsg -> _size, retMsg -> _buffer);
             }
             break;
         }
     }
 
-    // Send the retMsg back to the socket.
-    const char * writeBuffer = retMsg -> serialize();
-    int writtenBytes = write(socket, writeBuffer, sizeof(writeBuffer));
-    if (writtenBytes < 0)
-        log("Error sending response\n");
-
+    if (retMsg -> _code != -1) {
+        // Send the retMsg back to the socket.
+        const char * writeBuffer = retMsg -> serialize();
+        int writtenBytes = write(socket, writeBuffer, 3 * sizeof(int) + retMsg -> _size);
+        if (writtenBytes < 0)
+            log("Error sending response\n");
+        log("Wrote %d bytes %s \n", writtenBytes, writeBuffer);
+    }
 }
 
 

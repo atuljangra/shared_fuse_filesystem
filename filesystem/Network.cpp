@@ -99,6 +99,8 @@ int Network::send(Message *msg, bool wait , Message *retMsg) {
     stringstream ss;
 	// Convert message to a char *.
     const char *msgBuffer = msg -> serialize();
+    // The size we pass here is important. We need to send entire message
+    // which can contain NULL too. 
     n = write(sockfd,msgBuffer,strlen(msgBuffer));
     log("Wrote %s\n", msgBuffer); 
     if (n < 0) {
@@ -120,6 +122,7 @@ int Network::send(Message *msg, bool wait , Message *retMsg) {
 	// Convert a buffer to a msg.
     log("Received buffer %s\n", buffer);
     Message::fillMessage(retMsg, buffer);
-    log("Ret: %d Code: %d\n", retMsg -> _ret, retMsg ->_code);
+    log("Ret: %d Code: %d length: %d msg:%s \n", retMsg -> _ret, retMsg ->_code,
+            retMsg -> _size, retMsg -> _buffer);
 	return 0;
 }

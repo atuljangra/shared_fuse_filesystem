@@ -39,8 +39,8 @@ int FuseFS::Getattr(const char *path, struct stat *statbuf) {
     _network->send(msg, true, retMsg);
     int ret = retMsg -> _ret; 
     if (ret >= 0) {
-        memcpy(statbuf, retMsg -> _msg.c_str(), 
-                retMsg -> _msg.length());
+        memcpy(statbuf, retMsg -> _buffer, 
+                retMsg -> _size);
     }
     log("GetAttr ret %d\n", ret);
     return ret;
@@ -173,8 +173,8 @@ int FuseFS::Statfs(const char *path, struct statvfs *statInfo) {
     _network->send(msg, true, retMsg);
     int ret = retMsg -> _ret; 
     if (ret >= 0) {
-        memcpy(statInfo, retMsg -> _msg.c_str(), 
-                retMsg -> _msg.length());
+        memcpy(statInfo, retMsg -> _buffer, 
+                retMsg -> _size);
     }
      // int ret = 0; //RET_ERRNO(statvfs(fullPath, statInfo));
     log("statfs ret %d\n", ret);
