@@ -7,3 +7,4 @@ fileSystem
 *.tar.gz
 tags
 *.bak
+*.swp
