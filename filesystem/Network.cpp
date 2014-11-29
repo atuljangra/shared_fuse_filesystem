@@ -101,8 +101,8 @@ int Network::send(Message *msg, bool wait , Message *retMsg) {
     const char *msgBuffer = msg -> serialize();
     // The size we pass here is important. We need to send entire message
     // which can contain NULL too. 
-    n = write(sockfd,msgBuffer,strlen(msgBuffer));
-    log("Wrote %s\n", msgBuffer); 
+    n = write(sockfd,msgBuffer, 3*sizeof(int) + msg -> _size);
+    log("Wrote %d %s \n", msg -> _size, msgBuffer + 3 * sizeof(int)); 
     if (n < 0) {
         log("ERROR writing to socket\n");
         return -1;

@@ -18,6 +18,6 @@ using namespace std;
 
 #define MAX_MSG_SIZE 1024
 
-#define SERVER_ROOT "/home/atul/SharedFS"
+#define SERVER_ROOT "/home/atul/SharedFS/"
 
 #endif

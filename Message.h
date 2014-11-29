@@ -14,6 +14,9 @@
 #define CONNECT_CODE 1 
 #define GETATTR 2
 #define STATFS 3
+#define OPENDIR 4
+#define READDIR 5
+#define CLOSEDIR 6
 
 class Message {
     public:
@@ -69,13 +72,14 @@ class Message {
         void create_getxattr(const char * path, const char *name, char *value, size_t size);
         void create_listxattr(const char * path, char *list, size_t size);
         void create_removexattr(const char * path, const char *name);
-        void create_opendir(const char * path, struct fuse_file_info *fileInfo);
-        void create_readdir(const char * path, void *buf, fuse_fill_dir_t filler, off_t offset,
-                struct fuse_file_info *fileInfo);
+        void create_opendir(const char * path);
+        void create_readdir(const char * path);
+
         void create_releasedir(const char * path, struct fuse_file_info *fileInfo);
         void create_fsyncdir(const char * path, int datasync, struct fuse_file_info *fileInfo);
         void create_init(struct fuse_conn_info *conn);
-		
+	    
+        void create_closedir(const char * path);
 		// Networking stuff.
 		const char *serialize();
         

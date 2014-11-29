@@ -1,5 +1,6 @@
 #include <string>
 #include <sstream>
+#include <assert.h>
 
 #include "FuseFS.h"
 #include "../utils.h"
@@ -42,6 +43,7 @@ int FuseFS::Getattr(const char *path, struct stat *statbuf) {
         memcpy(statbuf, retMsg -> _buffer, 
                 retMsg -> _size);
     }
+
     log("GetAttr ret %d\n", ret);
     return ret;
 }
@@ -241,24 +243,60 @@ int FuseFS::Opendir(const char *path, struct fuse_file_info *fileInfo) {
 }
 int FuseFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler, 
         off_t offset, struct fuse_file_info *fileInfo) {
-    const char *fullPath = _fullPath(path);
-    log("readdir(path=%s, offset=%lud)\n", fullPath, offset); 
+    log("readdir(path=%s, offset=%lud)\n", path, offset); 
     // struct dirent *de = 0; //readdir(dir);
     
-    return 0;
-    
-    /*if (NULL == de) {
-        return -errno;
+    log("Attempting to open dir %s... ", path);
+    Message *opendirMsg = new Message();
+    opendirMsg -> create_opendir(path);
+    Message *response = new Message();
+    _network-> send(opendirMsg, true, response);
+    // Make sure that we were able to open the dir.
+    if (response -> _ret != 0) {
+        log("Problem while opening the dir. Returning");
+        return response -> _ret;
     }
-    else {
-        do {
-            if (filler(buf, de ->d_name, NULL, 0) != 0) {
-                return ENOMEM;
-            }
-        } while ((de = readdir(dir)) != NULL);
+
+    // Attempt readdir.
+    struct dirent *de = (struct dirent *)malloc(sizeof(struct dirent));
+    log("Readdir on %s\n", path);
+    Message *readDirMsg = new Message();
+    readDirMsg -> create_readdir(path);
+    // Clean response.
+    int cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, 3 * cleanSize);
+    _network -> send(readDirMsg, true, response);
+    // Or the length of returned message is not 0.
+    while(response -> _ret == 0 && response -> _size != 0) {
+        struct stat st;
+        memset(&st, 0, sizeof(st));
+        assert(response -> _size == sizeof(struct dirent));
+        memcpy(de, response -> _buffer, response -> _size);
+        st.st_ino = de -> d_ino;
+        st.st_mode = de -> d_type << 12;
+        if (filler(buf, de -> d_name, &st, 0))
+            break;
+
+        // Do the readdir again.
+        log("Readdir on path %s\n", path);
+        readDirMsg -> create_readdir(path);
+        // Clean the response message.
+        cleanSize = 3 * sizeof(int) + response -> _size;
+        memset(response, 0, cleanSize);
+        _network ->send(readDirMsg, true, response);
+        log("size: %d\n", response -> _size);
     }
+
+    // Attempting to close the directory.
+    Message *closeMsg = new Message();
+    closeMsg -> create_closedir(path);
+    cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, cleanSize);
+    _network ->send(closeMsg, true, response);
+    if (response -> _ret != 0) 
+        log("Problem while closing the dir %s\n", path);
+
     return 0;
-*/
 }
 
 

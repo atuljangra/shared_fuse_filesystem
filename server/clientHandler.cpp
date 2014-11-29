@@ -92,11 +92,14 @@ void ClientHandler::_threadListner() {
     }
     close(_initSocket);
 
+    // Initialize the map.
+    initMapdirp();
     log("%d:Entering the loop\n", _portNumber);
     while (true) {
         int newSockFD = accept(_listenSocketFD, (struct sockaddr *)&clientAddress, &clientLen);
         if (newSockFD < 0) {
             log("%d:Error on accept", _portNumber);
+            break;
         }
         char buffer[MAX_MSG_SIZE];
         bzero(buffer, MAX_MSG_SIZE);
@@ -148,6 +151,59 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
                 memcpy(retMsg -> _buffer, statInfo, sizeof(struct statvfs));
                 log("statfs returning %d %s\n", retMsg -> _size, retMsg -> _buffer);
             }
+            free(statInfo);
+            free(path);
+            break;
+        }
+        
+        case OPENDIR:
+        {
+            char *path = (char *)malloc(msg -> _size);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            log("opendir path %s\n", fpath(path));
+            int result = file_opendir(fpath(path));
+            retMsg -> _code = OPENDIR;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Opendir path:%s, size: %d ret:%d\n", path, msg-> _size, result);
+            free(path);
+            break;
+        }
+
+        case READDIR:
+        {
+            char *path = (char *)malloc(msg -> _size);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            bool finish = false; 
+            struct dirent *de = (struct dirent *)malloc(sizeof(struct dirent)); 
+            int result = file_readdir(fpath(path), de, finish);
+            retMsg -> _code = READDIR;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            // Struct can be NULL also.
+            if (finish) {
+                log("Readdir NULL\n");
+            }
+            else if (result == 0) {
+                retMsg -> _size = sizeof(struct dirent);
+                memcpy(retMsg -> _buffer, de, sizeof(dirent));
+            }
+            log("Readdir path:%s, ret:%d size:%d\n", path, result, retMsg->_size);
+            free(path);
+            free(de);
+            break;
+        }
+
+        case CLOSEDIR:
+        {
+            char *path = (char *)malloc(msg -> _size);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            int result = file_closedir(fpath(path));
+            retMsg -> _code = CLOSEDIR;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Closedir path:%s, ret:%d\n", path, result);
+            free(path);
             break;
         }
     }
