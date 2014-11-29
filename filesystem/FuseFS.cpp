@@ -44,7 +44,7 @@ int FuseFS::Getattr(const char *path, struct stat *statbuf) {
                 retMsg -> _size);
     }
 
-    log("GetAttr ret %d\n", ret);
+    log("GetAttr %s ret %d\n",path, ret);
     return ret;
 }
 
@@ -56,9 +56,12 @@ int FuseFS::Readlink(const char *path, char *link, size_t size) {
 }
 
 int FuseFS::Mknod(const char *path, mode_t mode, dev_t dev) {
-    const char *fullPath = _fullPath(path);
-    log("mknod(path=%s, mode=%ud)\n", fullPath, mode); 
-    int ret = 0; // RET_ERRNO(mknod(fullPath, mode, dev));
+    log("mknod(path=%s, mode=%u)\n", path, mode); 
+    Message *msg = new Message();
+    msg -> create_mknod(path, mode, dev);
+    Message *response = new Message();
+    _network -> send(msg, true, response);
+    int ret = response-> _ret;
     log("mknod ret %d\n", ret);
     return ret;
 }
@@ -137,7 +140,6 @@ int FuseFS::Truncate(const char *path, off_t offset, struct fuse_file_info *file
     log("truncate fh ret %d\n", ret);
     return ret;
 }
-
 int FuseFS::Utime(const char *path, struct utimbuf *ubuf) {
     const char *fullPath = _fullPath(path);
     log("utime(path=%s)\n", fullPath); 
@@ -145,25 +147,93 @@ int FuseFS::Utime(const char *path, struct utimbuf *ubuf) {
     log("utime ret %d\n", ret);
     return ret;
 }
+// Open and close the file.
 int FuseFS::Open(const char *path, struct fuse_file_info *fileInfo) {
-    const char *fullPath = _fullPath(path);
-    log("open(path=%s)\n", fullPath); 
-    fileInfo -> fh = 0; //open(fullPath, fileInfo -> flags);
+    log("open(path=%s)\n", path);
+    Message *openMsg = new Message();
+    openMsg -> create_open(path);
+    Message *response = new Message();
+    _network -> send(openMsg, true, response);
+    if (response -> _ret != 0) {
+        log("Error opening %s\n", path);
+        return response -> _ret;
+    }
+
+    // Now close the file.
+    Message *closeMsg = new Message();
+    closeMsg -> create_close(path);
+    int cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, cleanSize);
+    _network -> send(closeMsg, true, response);
+    if (response -> _ret != 0) {
+        log("Error while closing %s", path);
+    }
+
     log("open filehandle is %lud\n", fileInfo -> fh);
     return 0;
 }
 int FuseFS::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo) {
-    const char *fullPath = _fullPath(path);
-    log("read(path=%s, size=%d, offset=%d)\n", fullPath,(int)size, (int)offset); 
-    int ret = 0; //RET_ERRNO(pread(fileInfo -> fh, buf, size, offset));
-    log("Read ret %d\n", ret);
-    return ret;
+    log("read(path=%s, size=%d, offset=%d)\n", path,(int)size, (int)offset);
+
+    // See if we have this file chunk cached.
+    
+    // else  
+    // Trying to open the file first
+    Message *openMsg = new Message();
+    openMsg -> create_open(path);
+    Message *response = new Message();
+    _network -> send(openMsg, true, response);
+    if (response -> _ret != 0) {
+        log("Error opening %s\n", path);
+        return response -> _ret;
+    }
+
+    Message * readMsg = new Message();
+    // Currently not supporting reads.
+    assert(size <= MAX_MSG_SIZE);
+    readMsg -> create_read(path, size, offset);
+    int cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, cleanSize);
+    _network -> send(readMsg, true, response);
+    if (response -> _ret != 0) {
+        log("Error while reading %s\n", path);
+        return response -> _ret;
+    }
+
+    // Copy things into the buffer.
+    memcpy(buf, response -> _buffer, response -> _size);
+
+    // Now close the file.
+    Message *closeMsg = new Message();
+    closeMsg -> create_close(path);
+    cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, cleanSize);
+    _network -> send(closeMsg, true, response);
+    if (response -> _ret != 0) 
+        log("Error while closing %s", path);
+    
+    log("Read ret %d read %d bytes\n", response -> _ret, response->_size);
+    return response -> _size;
 }
 int FuseFS::Write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo) {
     const char *fullPath = _fullPath(path);
     log("write(path=%s, size=%d, offset=%d)\n", fullPath, (int)size, (int)offset); 
     int ret = 0; //RET_ERRNO(pwrite(fileInfo -> fh, buf, size, offset));
     log("Write ret %d\n", ret);
+    return ret;
+}
+
+int FuseFS::Access(const char *path, int mode) {
+    log("Access %s mode: %d", path, mode);
+    Message *msg = new Message();
+    msg -> create_access(path, mode);
+    Message *response = new Message();
+    _network -> send(msg, true, response);
+    int ret = response -> _ret;
+    if (ret != 0) {
+        log("Error access %s\n", path);
+    }
+    log("Access %s ret:%d\n", path, ret);
     return ret;
 }
 
@@ -286,7 +356,8 @@ int FuseFS::Readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         _network ->send(readDirMsg, true, response);
         log("size: %d\n", response -> _size);
     }
-
+    
+    log("Closing dir %s\n", path);
     // Attempting to close the directory.
     Message *closeMsg = new Message();
     closeMsg -> create_closedir(path);

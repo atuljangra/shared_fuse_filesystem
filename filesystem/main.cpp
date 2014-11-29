@@ -19,6 +19,7 @@ int main (int argc, char *argv[]) {
     filesystem_oper.getattr = wrap_getAttr;  
     filesystem_oper.readlink = wrap_readlink;
     filesystem_oper.getdir = NULL;
+    filesystem_oper.access = wrap_access;
     filesystem_oper.mknod = wrap_mknod;
     filesystem_oper.mkdir = wrap_mkdir;
     filesystem_oper.unlink = wrap_unlink;

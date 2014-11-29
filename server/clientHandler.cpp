@@ -120,9 +120,11 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
         case GETATTR: {
             struct stat *statbuf;
             statbuf = (struct stat *) malloc(sizeof(struct stat));
-            char *path = (char *)malloc(msg -> _size);
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
             memcpy(path, msg -> _buffer, msg -> _size);
             int result = file_getAttr(fpath(path), statbuf);
+            log("Getattr %s size:%d\n", path, msg -> _size);
             retMsg -> _code = GETATTR;
             retMsg -> _ret = result;
             retMsg -> _size = 0;
@@ -139,7 +141,8 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
         case STATFS: {
             struct statvfs *statInfo;
             statInfo = (struct statvfs *) malloc (sizeof(struct statvfs));
-            char *path = (char *)malloc(msg -> _size);
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
             memcpy(path, msg -> _buffer, msg -> _size);
             int result = file_statfs(fpath(path), statInfo);
             retMsg -> _code = STATFS;
@@ -158,7 +161,8 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
         
         case OPENDIR:
         {
-            char *path = (char *)malloc(msg -> _size);
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
             memcpy(path, msg -> _buffer, msg -> _size);
             log("opendir path %s\n", fpath(path));
             int result = file_opendir(fpath(path));
@@ -172,7 +176,8 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
 
         case READDIR:
         {
-            char *path = (char *)malloc(msg -> _size);
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
             memcpy(path, msg -> _buffer, msg -> _size);
             bool finish = false; 
             struct dirent *de = (struct dirent *)malloc(sizeof(struct dirent)); 
@@ -196,7 +201,8 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
 
         case CLOSEDIR:
         {
-            char *path = (char *)malloc(msg -> _size);
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
             memcpy(path, msg -> _buffer, msg -> _size);
             int result = file_closedir(fpath(path));
             retMsg -> _code = CLOSEDIR;
@@ -204,6 +210,98 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
             retMsg -> _size = 0;
             log("Closedir path:%s, ret:%d\n", path, result);
             free(path);
+            break;
+        }
+
+        case OPEN:
+        {
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            int result = file_open(fpath(path));
+            retMsg -> _code = OPEN;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Open file %s ret: %d\n", path, result);
+            free(path);
+            break;
+        }
+        
+        case CLOSE:
+        {
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            int result = file_close(fpath(path));
+            retMsg -> _code = CLOSE;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Close file %s ret: %d\n", path, result);
+            free(path);
+            break;
+        }
+
+        case READ:
+        {
+           int size, offset;
+           memcpy(&size, msg -> _buffer, sizeof(int));
+           memcpy(&offset, msg -> _buffer + sizeof(int), sizeof(int));
+           int pathSize = msg -> _size - (2*sizeof(int));
+           char *path = (char *) malloc(pathSize + 1);
+           memset(path, 0, pathSize + 1);
+           memcpy(path, msg -> _buffer + 2*sizeof(int), pathSize);
+           log("Open file:%s, size:%u, offset:%u\n", path, size, offset);
+           char * buf = (char *)malloc(size);
+           int result = file_read(fpath(path), buf, size, offset);
+           retMsg -> _code = READ;
+           retMsg -> _ret = result;
+           retMsg -> _size = 0;
+           if (result == 0) {
+               memcpy(retMsg -> _buffer, buf, result);
+               log("Read %d bytes , %s\n", result, buf);
+               retMsg -> _size = result;
+           }
+           log("Read %s ret: %d\n", path, result);
+           free(buf);
+           free(path);
+           break;
+        }
+
+        case MKNOD:
+        {
+            mode_t mode;
+            dev_t dev;
+            memcpy(&mode, msg -> _buffer, sizeof(mode_t));
+            memcpy(&dev, msg -> _buffer + sizeof(mode_t), sizeof(dev_t));
+            int pathSize = msg->_size - (sizeof(mode_t) + sizeof(dev_t));
+            char *path = (char *)malloc(pathSize + 1);
+            memset(path, 0, pathSize + 1);
+            memcpy(path, msg -> _buffer + sizeof(mode_t) + sizeof(dev_t), pathSize);
+            log("Mknod on %s\n", path);
+            int result = file_mknod(path, mode, dev);
+            retMsg -> _code = MKNOD;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Mknod %s ret: %d\n", path, result);
+            break;
+        }
+        case ACCESS:
+        {
+            int mode;
+            memcpy(&mode, msg -> _buffer, sizeof(mode_t));
+            int pathSize = msg -> _size - sizeof(mode_t);
+            char *path = (char *)malloc(pathSize + 1);
+            memset(path, 0, pathSize + 1);
+            memcpy(path, msg -> _buffer + sizeof(mode_t), pathSize);
+            log("Access on %s with mode %d\n", path, mode);
+            int result = file_access(path, mode);
+            retMsg -> _code = ACCESS;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            if (result != 0) {
+                log("Access Error %s\n", path);
+            }
+            log("Access %s ret %d\n", path, result);
             break;
         }
     }

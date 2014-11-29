@@ -23,6 +23,10 @@ void setRootDir(const char *path) {
     INS(setRootDir(path));
 }
 
+int wrap_access(const char *path, int mode) {
+    return INS(Access(path, mode));
+}
+            
 int wrap_getAttr(const char * path, struct stat *st) {
     return INS(Getattr(path, st));
 }

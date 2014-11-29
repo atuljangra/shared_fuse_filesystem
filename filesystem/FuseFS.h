@@ -52,6 +52,7 @@ class FuseFS {
 
         // API
         void setRootDir(const char *path);
+        int Access(const char *path, int mode);
         int Getattr(const char *path, struct stat *statbuf);
         int Readlink(const char *path, char *link, size_t size);
         int Mknod(const char *path, mode_t mode, dev_t dev);

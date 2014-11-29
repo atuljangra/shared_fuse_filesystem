@@ -20,4 +20,7 @@ using namespace std;
 
 #define SERVER_ROOT "/home/atul/SharedFS/"
 
+// 100 bytes.
+#define CHUNK_LEN 100 
+
 #endif

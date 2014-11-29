@@ -17,6 +17,12 @@
 #define OPENDIR 4
 #define READDIR 5
 #define CLOSEDIR 6
+#define OPEN 7
+#define CLOSE 8
+#define READ 9
+#define WRITE 10
+#define MKNOD 11
+#define ACCESS 12
 
 class Message {
     public:
@@ -45,6 +51,7 @@ class Message {
          * * Message creaters.
          * * Modify already instantiated Message.
          * */
+        void create_access(const char * path, int mode);
         void create_getAttr(const char * path);
         void create_readlink(const char * path, char *link, size_t size);
         void create_mknod(const char * path, mode_t mode, dev_t dev);
@@ -58,9 +65,8 @@ class Message {
         void create_chown(const char * path, uid_t uid, gid_t gid);
         void create_utime(const char * path, struct utimbuf *ubuf);
         void create_truncate(const char * path, off_t newSize);
-        void create_open(const char * path, struct fuse_file_info *fileInfo);
-        void create_read(const char * path, char *buf, size_t size, 
-                off_t offset, struct fuse_file_info *fileInfo);
+        void create_open(const char * path);
+        void create_read(const char * path, size_t size, off_t offset);
         void create_write(const char * path, const char *buf, size_t size,
                 off_t offset, struct fuse_file_info *fileInfo);
         void create_statfs(const char * path);
@@ -80,7 +86,8 @@ class Message {
         void create_init(struct fuse_conn_info *conn);
 	    
         void create_closedir(const char * path);
-		// Networking stuff.
+		void create_close(const char * path);
+        // Networking stuff.
 		const char *serialize();
         
         static Message * toMessage(char *buffer) {
