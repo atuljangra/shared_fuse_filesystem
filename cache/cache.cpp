@@ -10,6 +10,7 @@ cache_block::cache_block(int chunkid, char *data, char *path) {
     strncpy(this->path, path, MAXPATHSIZE);
     this->data = (char *) malloc(MAXBLOCKSIZE);
     strncpy(this->data, data, MAXBLOCKSIZE);
+    time = 0;
 
 }
 
@@ -64,12 +65,33 @@ void *cache::update_block(int chunkid, char *data) {
 
 }
 
-void cache::invalidate(int chunkid) {
+void *cache::add_block(int chunkid, char *data) {
 
-    if(blocks.count(chunkid) > 0) {
+    cache_block *block = new cache_block(chunkid, data);
+    block->time = last_time++;
+    if(blocks.size == MAXCACHESIZE) {
 
-        blocks[chunkid].invalidate(); 
+        int to_remove = -1;
+        int time = INT_MAX;
+        for(auto &x : blocks) {
+
+            if(x.insert_time < time) {
+
+                time = x.insert_time;
+                to_remove = x.chunk_id;
+
+            }
+
+        }
+        blocks.erase(to_remove);
 
     }
+    blocks[block->chunk_id] = block;
+
+}
+void cache::invalidate(int chunkid) {
+
+    if(blocks.count(chunkid) > 0)
+        blocks.erase(chunkid);
 
 }
