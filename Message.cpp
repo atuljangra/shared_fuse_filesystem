@@ -19,7 +19,6 @@ void Message::create_getAttr(const char *path) {
     _size = strlen(path);
     _ret = -1;
     memcpy(_buffer, path, _size);
-    printf("%d %s %s %lu\n", _size, _buffer, path, strlen(path));
     _code = GETATTR;
 }
 
@@ -100,5 +99,41 @@ void Message::create_mknod(const char *path, mode_t mode, dev_t dev) {
     memcpy(_buffer + sizeof(mode_t), &dev, sizeof(dev_t));
     int sizeOfPath = strlen(path);
     memcpy(_buffer + sizeof(mode_t) + sizeof(dev_t), path, sizeOfPath);
+}
+
+void Message::create_unlink(const char *path) {
+    memset(_buffer, 0, _size);
+    _size = strlen(path);
+    _ret = -1;
+    memcpy(_buffer, path, _size);
+    _code = UNLINK;
+}
+
+void Message::create_rename(const char *path, const char *to) {
+    memset(_buffer, 0, _size);
+    _size = (2 * sizeof(int)) + strlen(path) + sizeof(to);
+    _ret = -1;
+    _code = RENAME;
+    int len1 = strlen(path);
+    int len2 = strlen(to);
+    memcpy(_buffer, &len1, sizeof(int));
+    memcpy(_buffer + sizeof(int), path, len1);
+    memcpy(_buffer + sizeof(int) + len1, &len2, sizeof(int));
+    memcpy(_buffer + (2*sizeof(int)) + len1, to, len2);
+}
+
+void Message::create_write(const char *path, const char *buf, size_t  size,
+        off_t offset) {
+    // OFFSET SIZE SIZE_PATH PATH BUFFER
+    memset(_buffer, 0, _size);
+    int pathLen = strlen(path);
+    _size = 3 * sizeof(int) + size + pathLen;
+    _code = WRITE;
+    _ret = -1;
+    memcpy(_buffer, &offset, sizeof(int));
+    memcpy(_buffer + sizeof(int), &size, sizeof(int));
+    memcpy(_buffer + 2 * sizeof(int), &pathLen, sizeof(int));
+    memcpy(_buffer + 3 * sizeof(int), path, pathLen);
+    memcpy(_buffer + 3 * sizeof(int) + pathLen, buf, size);
 }
 

@@ -75,11 +75,16 @@ int FuseFS::Mkdir(const char *path, mode_t mode) {
 }
 
 int FuseFS::Unlink(const char *path) {
-    const char *fullPath = _fullPath(path);
-    log("unlink(path=%s)\n", fullPath); 
-    int ret = 0; // RET_ERRNO(unlink(fullPath));
-    log("unlink ret %d\n", ret);
-    return ret;
+    log("rename(path=%s)\n", path); 
+    Message *msg = new Message();
+    msg -> create_unlink(path) ;
+    Message *response = new Message();
+    _network -> send(msg, true, response);
+    if (response -> _ret != 0) {
+        log("Unlink Error %s %d\n", path , response -> _ret);
+    } 
+    log("unlinkret %d\n", response -> _ret);
+    return response -> _ret;
 }
 
 int FuseFS::Rmdir(const char *path) {
@@ -97,13 +102,19 @@ int FuseFS::Symlink(const char *path, const char *link) {
     log("symlink ret %d\n", ret);
     return ret;
 }
-int FuseFS::Rename(const char *path, const char *newpath) {
-    const char *fullPath = _fullPath(path);
-    log("rename(path=%s, newPath=%s)\n", fullPath, newpath); 
-    int ret = 0; //RET_ERRNO(rename(fullPath, newpath));
-    log("rename ret %d\n", ret);
-    return ret;
+int FuseFS::Rename(const char *path, const char *newPath) {
+    log("rename(path=%s, newPath=%s)\n", path, newPath); 
+    Message *msg = new Message();
+    msg -> create_rename(path, newPath);
+    Message *response = new Message();
+    _network -> send(msg, true, response);
+    if (response -> _ret != 0) {
+        log("Rename Error %s %s %d\n", path, newPath, response -> _ret);
+    } 
+    log("rename ret %d\n", response -> _ret);
+    return response -> _ret;
 }
+
 int FuseFS::Link(const char *path, const char *newpath) {
     const char *fullPath = _fullPath(path);
     const char *newPath = _fullPath(newpath);
@@ -213,14 +224,48 @@ int FuseFS::Read(const char *path, char *buf, size_t size, off_t offset, struct 
         log("Error while closing %s", path);
     
     log("Read ret %d read %d bytes\n", response -> _ret, response->_size);
-    return response -> _size;
+    return response -> _ret;
 }
+
 int FuseFS::Write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo) {
-    const char *fullPath = _fullPath(path);
-    log("write(path=%s, size=%d, offset=%d)\n", fullPath, (int)size, (int)offset); 
-    int ret = 0; //RET_ERRNO(pwrite(fileInfo -> fh, buf, size, offset));
-    log("Write ret %d\n", ret);
-    return ret;
+     log("write(path=%s, size=%d, offset=%d)\n", path,(int)size, (int)offset);
+
+    // See if we have this file chunk cached.
+    
+    // else  
+    // Trying to open the file first
+    Message *openMsg = new Message();
+    openMsg -> create_open(path);
+    Message *response = new Message();
+    _network -> send(openMsg, true, response);
+    if (response -> _ret != 0) {
+        log("Error opening %s\n", path);
+        return response -> _ret;
+    }
+
+    Message * writeMsg = new Message();
+    // Currently not supporting reads.
+    assert(size <= MAX_MSG_SIZE);
+    writeMsg-> create_write(path, buf, size, offset);
+    int cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, cleanSize);
+    _network -> send(writeMsg, true, response);
+    if (response -> _ret != 0) {
+        log("Error while writing %s\n", path);
+        return response -> _ret;
+    }
+
+    // Now close the file.
+    Message *closeMsg = new Message();
+    closeMsg -> create_close(path);
+    cleanSize = 3 * sizeof(int) + response -> _size;
+    memset(response, 0, cleanSize);
+    _network -> send(closeMsg, true, response);
+    if (response -> _ret != 0) 
+        log("Error while closing %s", path);
+    
+    log("Write ret %d \n", response -> _ret);
+    return response -> _ret;
 }
 
 int FuseFS::Access(const char *path, int mode) {

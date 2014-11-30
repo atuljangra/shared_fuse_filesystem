@@ -23,6 +23,8 @@
 #define WRITE 10
 #define MKNOD 11
 #define ACCESS 12
+#define UNLINK 13
+#define RENAME 14
 
 class Message {
     public:
@@ -68,7 +70,7 @@ class Message {
         void create_open(const char * path);
         void create_read(const char * path, size_t size, off_t offset);
         void create_write(const char * path, const char *buf, size_t size,
-                off_t offset, struct fuse_file_info *fileInfo);
+                off_t offset);
         void create_statfs(const char * path);
         void create_flush(const char * path, struct fuse_file_info *fileInfo);
         void create_release(const char * path, struct fuse_file_info *fileInfo);

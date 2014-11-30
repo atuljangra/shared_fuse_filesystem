@@ -285,6 +285,7 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
             log("Mknod %s ret: %d\n", path, result);
             break;
         }
+        
         case ACCESS:
         {
             int mode;
@@ -304,6 +305,69 @@ void ClientHandler::_handleMessage(char *buffer, int socket) {
             log("Access %s ret %d\n", path, result);
             break;
         }
+        
+        case UNLINK:
+        {
+            char *path = (char *)malloc(msg -> _size + 1);
+            memset(path, 0, msg->_size + 1);
+            memcpy(path, msg -> _buffer, msg -> _size);
+            int result = file_unlink(fpath(path));
+            retMsg -> _code = UNLINK;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Unlink file %s ret: %d\n", path, result);
+            free(path);
+            break;
+
+        }
+
+        case RENAME:
+        {
+            int len1, len2;
+            memcpy(&len1, msg -> _buffer, sizeof(int));
+            char *path = (char *)malloc(len1 + 1);
+            memset(path, 0, len1 + 1);
+            memcpy(path, msg -> _buffer + sizeof(int), len1);
+            
+            memcpy(&len2, msg -> _buffer + sizeof(int) + len1, sizeof(int));
+            char *to = (char *) malloc(len2 + 1);
+            memset(to, 0, len2 + 1);
+            memcpy(to, msg -> _buffer + len1 + 2 *sizeof(int), len2);
+
+            log("Rename file %s to %s\n", path, to);
+            int result = file_rename(fpath(path), fpath(to));
+            retMsg -> _code = RENAME;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Rename file %s to %s ret: %d\n", path, to, result);
+            free(path);
+            free(to);
+            break;
+
+        }
+
+        case WRITE:
+        {
+            int offset, size, pathSize;
+            memcpy(&offset, msg -> _buffer, sizeof(int));
+            memcpy(&size, msg -> _buffer + sizeof(int), sizeof(int));
+            memcpy(&pathSize, msg -> _buffer + 2 * sizeof(int), sizeof(int));
+            char *path = (char *)malloc(pathSize + 1);
+            memset(path, 0, pathSize + 1);
+            memcpy(path, msg -> _buffer + 3 * sizeof(int), pathSize);
+
+            char *buf = (char *) malloc(size);
+            memcpy(buf, msg -> _buffer + 3 * sizeof(int) + pathSize, size);
+
+            log("Writing %s size:%d off:%d\n", path, size, offset);
+            int result = file_write(path, buf, size, offset);
+            retMsg -> _code = WRITE;
+            retMsg -> _ret = result;
+            retMsg -> _size = 0;
+            log("Write %s size:%d offset:%d result:%d\n", path, size, offset, result);
+            break;
+        }
+
     }
 
     if (retMsg -> _code != -1) {

@@ -85,7 +85,14 @@ return 0;
 }
 
 int file_unlink(const char * path) {
-return 0;
+    int result = unlink(path);
+    
+    if (result == -1) {
+        printf("Unlink%s error %d\n", path, errno);
+        return -errno;
+    }
+    printf("Unlink %s ret %d\n", path, result);
+    return 0;
 }
 
 int file_rmdir(const char * path) {
@@ -97,7 +104,14 @@ return 0;
 }
 
 int file_rename(const char * path, const char * newPath) {
-return 0;
+    int result = rename(path, newPath);
+    
+    if (result == -1) {
+        printf("Rename Error: %s %s error %d\n", path, newPath, errno);
+        return -errno;
+    }
+    printf("Rename  %s %s ret %d\n", path, newPath, result);
+    return 0;
 }
 
 int file_link(const char * path, const char *newPath) {
@@ -170,8 +184,22 @@ int file_close(const char * path) {
 }
 
 int file_write(const char * path, const char *buf, size_t size,
-        off_t offset, struct fuse_file_info *fileInfo) {
-return 0;
+        off_t offset) {
+    string(key);
+    printf("File write %s %s \n", path, key.data());
+    struct Filep *filep;
+    filep = mapFilep[key];
+    if (filep == NULL) {
+        printf("Error write while getting %s\n", key.data());
+        return -1;
+    }
+    int result = pwrite(filep->fp, buf, size, offset);
+    if (result == -1) {
+        printf("Error while writing %s errno: %d\n", path, errno);
+        return -errno;
+    }
+    printf("write %d bytes\n", result);
+    return result;
 }
 
 int file_statfs(const char * path, struct statvfs *statInfo) {
