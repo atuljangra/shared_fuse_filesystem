@@ -1,15 +1,9 @@
 A _shared_ Fuse-based filesystem.
+NFS-like file system based on Fuse, where we can mount one remote directory on multiple clients.
+Strongly consistent client side caching is there.
+
 
 -- Tracking --
 Things left:
-Client:
-    1. Initialize Network.
-    2. Make Network calls in all the file operations.
-    
-Server:
-    1. Install all the handlers.
-    2. Think about the relative locking. 
-    3. Implement the cache.
-
-Message creation.
-Message decoding.
+    Caching.
+    Proper permission management.
