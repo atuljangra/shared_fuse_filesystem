@@ -3,8 +3,6 @@ NFS-like file system based on Fuse, where we can mount one remote directory on m
 Strongly consistent client side caching is there.
 
 
--- Tracking --
-
 TODO:
 
     Caching.
