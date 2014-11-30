@@ -4,6 +4,8 @@ Strongly consistent client side caching is there.
 
 
 -- Tracking --
-Things left:
+
+TODO:
+
     Caching.
     Proper permission management.
