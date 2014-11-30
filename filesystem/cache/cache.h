@@ -1,9 +1,7 @@
-
-
 #include <stdio.h>
 #include <unordered_map>
 
-#define MAXBOCKSIZE 400
+#define MAXBOCKSIZE 100
 #define MAXCACHESIZE 8
 #define std::unordered_map<int,cache_block*>::const_iterator cache_it
 
@@ -17,7 +15,6 @@ class cache {
         void update_block(int, char*);
         void add_block(cache_block *);
         void invalidate(int);
-
 }
 
 class cache_block {
@@ -35,5 +32,4 @@ class cache_block {
         void update_data(char* );
         void invalidate();
         void validate();
-
 }

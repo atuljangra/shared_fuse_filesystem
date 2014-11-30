@@ -11,9 +11,6 @@
 
 using namespace std;
 /*
- * TODO: This functions will serve as the basis for the handlers on server side.
- * TODO: Create message for each of the method.
- * TODO: Send all the requests over the network.
  * TODO: Error renaming, permission denied. Possible problem with chmod, chown.
  * TODO: Flush, Release Sync. What can be the problem?
  * TODO: Error 61 getxattr while renaming.
@@ -201,7 +198,7 @@ int FuseFS::Read(const char *path, char *buf, size_t size, off_t offset, struct 
 
     Message * readMsg = new Message();
     // Currently not supporting reads.
-    assert(size <= MAX_MSG_SIZE);
+    // assert(size <= MAX_MSG_SIZE);
     readMsg -> create_read(path, size, offset);
     int cleanSize = 3 * sizeof(int) + response -> _size;
     memset(response, 0, cleanSize);

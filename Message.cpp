@@ -19,6 +19,7 @@ void Message::create_getAttr(const char *path) {
     _size = strlen(path);
     _ret = -1;
     memcpy(_buffer, path, _size);
+    printf("%d %s %s %lu\n", _size, _buffer, path, strlen(path));
     _code = GETATTR;
 }
 

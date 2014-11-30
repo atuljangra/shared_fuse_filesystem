@@ -1,5 +1,3 @@
-
-
 #include <cache.h>
 
 cache_block::cache_block(int chunkid, char *data, char *path) {

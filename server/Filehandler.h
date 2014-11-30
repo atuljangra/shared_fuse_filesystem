@@ -150,7 +150,7 @@ int file_open(const char * path) {
 }
 
 int file_read(const char * path, char *buf, size_t size, off_t offset) {
-    string(key);
+    string key(path);
     printf("File read %s %s \n", path, key.data());
     struct Filep *filep;
     filep = mapFilep[key];
